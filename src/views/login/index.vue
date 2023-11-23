@@ -10,17 +10,21 @@
           <el-input placeholder="请输入手机号码" v-model="loginForm.mobile"></el-input>
         </el-form-item>
 
-        <el-form-item prop="password">
-          <el-input placeholder="请输入密码" v-model="loginForm.password" ></el-input>
+        <el-form-item prop="password" >
+          <el-input placeholder="请输入密码" v-model="loginForm.password" :show-password="true" ></el-input>
         </el-form-item>
 
         <el-form-item prop="isAgree">
-          <el-checkbox>用户平台使用协议</el-checkbox>
+          <el-checkbox v-model="loginForm.isAgree">
+            用户平台使用协议
+          </el-checkbox>
         </el-form-item>
         
         <el-form-item>
           <el-button type="primary" style="width: 350px;" @click="login">登录</el-button>
         </el-form-item>
+
+        
 
        </el-form>
       </el-card>
@@ -31,12 +35,13 @@
 <script>
 export default {
   name : "Login",
+  
   data(){
     return{
       loginForm:{
-        mobile:"",
-        password:"",
-        isAgree:false
+        mobile:process.env.NODE_ENV==="development"?"13800000002": "",
+        password:process.env.NODE_ENV==="development"?"hm#qd@23!":"",
+        isAgree:process.env.NODE_ENV==="development"?true:false
       },
       loginRules:{
         mobile:[
@@ -64,7 +69,7 @@ export default {
             trigger:"blur"
           }
         ],
-        // required 只能检测到 null undefined "" 无法检测到bool值，所以只能用自定义校验
+        // required 只能检测到 null undefined "" 无法检测到bool值，所以只能用自定义校验规则
         isAgree:[
           {
             validator:(rule,value,callback)=>
@@ -84,11 +89,16 @@ export default {
     login()
     {
       // 通过this.$refs可以找到整个表单的组件
-      this.$refs.form.validate((isOK,obj)=>{
+      this.$refs.form.validate(async(isOK,obj)=>{
         console.log("对整个表单校验结束后，会调用此回调函数",isOK,obj)
-        if(isOK){alert("登录成功！")}
+        if(isOK)
+        {
+          await this.$store.dispatch("user/login",this.loginForm);
+          this.$router.push("/")
+        }
       })
-    }
+    },
+    
   }
 }
 </script>
