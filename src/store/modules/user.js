@@ -1,8 +1,9 @@
 import {getToken,setToken,removeToken} from "../../utils/auth"
-import { login } from "@/api/user";
+import { login ,getUserInfo} from "@/api/user";
 const state={
   //token通过读取缓存来获取
-  token:getToken()
+  token:getToken(),
+  UserInfo:{}//用户资料
 }
 
 const mutations={
@@ -20,12 +21,16 @@ const mutations={
     state.token=null;
     //删除缓存中的token
     removeToken()
+  },
+  setUserInfo(state,UserInfo)
+  {
+    state.UserInfo=UserInfo;
   }
 }
 
 
 const actions={
-  
+  //登录
   async login(context,value)
   {
     console.log("这里是store里的action，收到的value",value);
@@ -37,6 +42,15 @@ const actions={
     //登录接口返回了一个token， 
     context.commit("setToken",token)
     
+  },
+
+  //获取用户资料
+  async getUserInfo(context)
+  {
+    //调用用户资料接口
+     const result= await getUserInfo();
+    //将返回的结果设置vuex
+    context.commit("setUserInfo",result);
   }
 }
 

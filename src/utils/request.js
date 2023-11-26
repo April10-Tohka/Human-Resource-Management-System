@@ -30,7 +30,7 @@ service.interceptors.request.use((config)=>{
   return Promise.reject(error)
 })
 
-//添加相应拦截器
+//添加响应拦截器
 service.interceptors.response.use((res)=>{
   console.log("响应成功！");
   //响应成功后，获取响应数据
@@ -38,8 +38,7 @@ service.interceptors.response.use((res)=>{
   if(success)
   {
     //成功就返回数据
-    // return Promise.resolve(data);
-    return data;
+    return data;//TRACK 我想知道axios返回的数据是Promise形式还是data本身的形式,这让我只能跟着视频使用async
   }
   else
   {
