@@ -41,6 +41,8 @@ const actions={
     console.log("token:",token);
     //登录接口返回了一个token， 
     context.commit("setToken",token)
+
+    // login(value).then((token)=>{context.commit("setToken",token);return Promise.resolve()});  //BUG 这里也能实现设置token，但不知道为什么点了登录
     
   },
 
@@ -53,7 +55,7 @@ const actions={
     context.commit("setUserInfo",result);
   },
 
-  //token超时，退出登录
+  //退出登录
   logOut(context)
   {
     //删除token
