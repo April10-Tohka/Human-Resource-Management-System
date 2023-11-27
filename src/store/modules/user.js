@@ -15,7 +15,7 @@ const mutations={
     setToken(token);
     
   },
-  removeToken(state,token)
+  removeToken(state)
   {
     //设置state里的token为null
     state.token=null;
@@ -51,6 +51,15 @@ const actions={
      const result= await getUserInfo();
     //将返回的结果设置vuex
     context.commit("setUserInfo",result);
+  },
+
+  //token超时，退出登录
+  logOut(context)
+  {
+    //删除token
+    context.commit("removeToken");
+    //将用户资料设置为空
+    context.commit("setUserInfo",{});
   }
 }
 

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import store from '../store/index'
 import {Message} from "element-ui"
-
+import router from '@/router'
 //创建一个axios实例
 const service=axios.create({
   // baseURL:process.env.VUE_APP_BASE_API,//获取到的是 /dev-api
@@ -49,8 +49,26 @@ service.interceptors.response.use((res)=>{
     })
     return Promise.reject(message);
   }
-},(err)=>{
+},
+  //响应失败
+  (err)=>{
   console.log("响应失败了！");
+  if(err.response.status===401)
+  {
+    console.log("token验证不通过就会输出此句");
+    Message({
+      type:"warning",
+      message:"token超时了"
+    })
+    //调用退出登录action
+    store.dispatch("user/logOut")
+    .then(()=>{
+      //store.dispatch返回的是Promise
+      // 使用then()等待dispatch执行完 再接着跳转到登录界面
+      router.push("/login");
+    })
+    return;
+  }
   Message({
     message:err.message,
     type:"error"
