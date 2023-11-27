@@ -27,6 +27,7 @@ router.beforeEach(async(to,from,next)=>{
       if(!store.getters.userId)
       {
         //不存在用户的id，则获取用户资料,通过调用action里的getUserInfo
+        console.log("开始获取用户资料，会调用getUserInfo的action，会请求一次");
         await store.dispatch("user/getUserInfo");
       }
       next();
