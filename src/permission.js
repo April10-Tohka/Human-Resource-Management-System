@@ -9,8 +9,6 @@ const WhiteList=["/login","/404"];
 
 //路由前置守卫
 router.beforeEach(async(to,from,next)=>{
-  console.log("前置守卫,to:",to);
-  console.log("前置守卫,from:",from);
   nprogress.start();//开启进度条
   if(store.getters.token)
   {
@@ -55,8 +53,6 @@ router.beforeEach(async(to,from,next)=>{
 
 //路由后置守卫
 router.afterEach((to,from)=>{
-  console.log("路由后置守卫,to:",to);
-  console.log("路由后置守卫,from:",from);
   nprogress.done();
   
 })
