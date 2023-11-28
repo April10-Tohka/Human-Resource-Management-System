@@ -42,7 +42,8 @@ const actions={
     //登录接口返回了一个token， 
     context.commit("setToken",token)
 
-    // login(value).then((token)=>{context.commit("setToken",token);return Promise.resolve()});  //BUG 这里也能实现设置token，但不知道为什么点了登录
+    // login(value).then((token)=>{context.commit("setToken",token);return Promise.resolve()});
+      //BUG 这里也能实现设置token，但不知道为什么点了登录就不会有后续跳转的页面以及获取用户资料,要刷新才会跳转
     
   },
 
