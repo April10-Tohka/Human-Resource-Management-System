@@ -18,3 +18,13 @@ export function getUserInfo()
     method:"get"
   })
 }
+
+//修改密码接口
+export function updatePassword(data)
+{
+  return request({
+    url:"/sys/user/updatePass",
+    method:"put",
+    data:data
+  })
+}

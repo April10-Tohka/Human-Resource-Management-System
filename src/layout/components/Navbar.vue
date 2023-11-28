@@ -24,7 +24,8 @@
           <a target="_blank" href="https://github.com/PanJiaChen/vue-admin-template/">
             <el-dropdown-item>项目地址</el-dropdown-item>
           </a>
-          <a target="_blank" href="https://panjiachen.github.io/vue-element-admin-site/#/">
+          <!--NOTE  a标签默认行为会跳转页面，所以用.prevent修饰符来阻止标签默认事件 -->
+          <a target="_blank" @click.prevent="updatePassword">
             <el-dropdown-item>修改密码</el-dropdown-item>
           </a>
           
@@ -35,6 +36,26 @@
         </el-dropdown-menu>
       </el-dropdown>
     </div>
+    <!-- 弹窗 -->
+    <el-dialog title="修改密码" :visible.sync="showDialog" width="500px" @close="btnCancel">
+      <!-- 监听弹窗的close事件，关闭弹窗同时清除校验结果，为了更好的用户体验 -->
+      <!--NOTE label-width设置标签文本的宽度，子元素form-item会继承该值 -->
+      <el-form label-width="120px" :model="passForm" :rules="rules" ref="passForm">
+        <el-form-item label="旧密码" prop="oldPassword">
+          <el-input size="small" show-password  v-model="passForm.oldPassword"></el-input>
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input size="small" show-password v-model="passForm.newPassword"></el-input>
+        </el-form-item>
+        <el-form-item label="重复密码" prop="confirmPassword">
+          <el-input size="small" show-password v-model="passForm.confirmPassword"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary"  size="small" @click="btnOK">确认修改</el-button>
+          <el-button size="small" @click="btnCancel">取消</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -42,7 +63,7 @@
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
-
+import { updatePassword } from '@/api/user'
 export default {
   components: {
     Breadcrumb,
@@ -55,6 +76,46 @@ export default {
       "name"
     ])
   },
+  data()
+  {
+    return{
+      showDialog:false,//控制dialog框的显示
+      passForm:{
+        oldPassword:"",
+        newPassword:"",
+        confirmPassword:""
+      },
+      //修改密码表单校验规则
+      rules:{
+        oldPassword:[
+          {required:true,message:"旧密码不能为空",trigger:"blur"},
+        ],
+        newPassword:[
+        {required:true,message:"新密码不能为空",trigger:"blur"},
+        {min:6,max:16,trigger:"blur",message:"密码长度应该为6-16位之间"}
+        ],
+        confirmPassword:[
+        {required:true,message:"重复密码不能为空",trigger:"blur"},
+        //重复密码通过自定义校验规则来校验是否与新密码一致
+        {
+          trigger:"blur",
+          validator:(rule,value,callback)=>{
+            //官方文档是箭头函数，this是指向组件vue组件实例
+            if(value===this.passForm.newPassword)
+            {
+              callback()
+            }
+            else
+            {
+              //密码不一致，告知错误信息
+              callback(new Error("重复密码与新密码不一致"))
+            }
+          }
+        }
+        ]
+      }
+    }
+  },
   methods: {
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
@@ -65,7 +126,38 @@ export default {
         //退出登录action返回的是Promise，执行完dispatch，再跳转到登录界面
         this.$router.push("/login");
       })
-      
+    },
+    updatePassword()
+    {
+      //显示dialog框
+      this.showDialog=true;
+    },
+    btnOK()
+    {
+      console.log("this",this.$message);
+      this.$refs.passForm.validate((isOK,obj)=>{
+        console.log("修改密码表单校验完成后，调用此回调函数,isok:",isOK,obj);
+        //校验成功
+        if(isOK)
+        {
+          //调用修改密码接口
+          updatePassword(this.passForm).then((data)=>{
+          // 响应完接口后，提示并重置表单
+          console.log("修改密码接口返回什么东西?",data);
+          //修改密码成功提示
+          this.$message({message:"修改密码成功",type:"success"})
+          this.btnCancel()
+          })
+          
+        }
+      })
+    },
+    btnCancel()
+    {
+      //重置表单
+      this.$refs.passForm.resetFields();
+      //关闭dialog框
+      this.showDialog=false;
     }
   }
 }
