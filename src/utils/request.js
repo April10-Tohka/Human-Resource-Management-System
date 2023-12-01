@@ -66,8 +66,9 @@ service.interceptors.response.use((res)=>{
       //store.dispatch返回的是Promise
       // 使用then()等待dispatch执行完 再接着跳转到登录界面
       router.push("/login");
+      return Promise.reject(err);
     })
-    return;
+    
   }
   Message({
     message:err.message,
