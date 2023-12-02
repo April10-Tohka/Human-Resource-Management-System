@@ -26,10 +26,7 @@
                                 </el-dropdown>
                         </el-col>
                     </el-row> 
-                </template>
-                
-
-                
+                </template> 
             </el-tree>
         </div>
         <!-- NOTE
@@ -39,7 +36,7 @@
             然后子组件$emit('update:showDialog', false),触发update:showDialog，并传了false过去,使得showDialog=false
             参考文档：https://www.jb51.net/javascript/299819zbb.htm
         -->
-        <add-dept :showDialog.sync="showDialog" :currentNodeId="currentNodeId" @updateDepartment="getDepartment"></add-dept>
+        <add-dept ref="AddDept" :showDialog.sync="showDialog" :currentNodeId="currentNodeId" @updateDepartment="getDepartment"></add-dept>
     </div>
 </template>
 
@@ -88,6 +85,16 @@ export default {
             {
                 // 给AddDept组件传入showDialog=true，使其显示
                 this.showDialog=true;
+            }
+            //点击了编辑
+            else if (type==="edit")
+            {
+                console.log("点击了编辑");
+                console.log("id:",id);
+                //显示弹出层
+                this.showDialog=true;
+                //调用AddDept组件的getDepartmentDetail方法，获取部门数据
+                this.$refs.AddDept.getDepartmentDetail(id);
             }
         }
     }

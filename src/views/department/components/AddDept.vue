@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import {getDepartment,getManagerList,AddDepartment} from "@/api/department"
+import {getDepartment,getManagerList,AddDepartment,getDepartmentDetail} from "@/api/department"
 export default {
     name:"AddDept",
     props:{
@@ -85,13 +85,21 @@ export default {
                             message:"新增部门成功"
                         })
                         //重置表单,关闭表单对话框
-                        this.closeDialog();
-                        
-                    
+                        this.closeDialog();                        
                     })
                 }
             })
             
+        },
+        //AddDept组件获取点击了编辑的部门的数据
+        getDepartmentDetail(id)
+        {
+            //获取部门数据
+            getDepartmentDetail(id).then(data=>{
+                console.log("getDepartmentDetail返回的数据",data);
+                //数据赋值给表单数据
+                this.formData=data;
+            })
         }
     },
     data()
@@ -114,6 +122,15 @@ export default {
                         trigger:"blur",
                         validator:async(rule,value,callback)=>{
                             let result=await getDepartment();
+                            //编辑部门场景下，表单校验要去除本身的数据，因为点击编辑后，数据从服务器得来
+                            // 编辑部门场景和新增部门场景的区别在于form.id是否存在
+                            //编辑，请求服务器并获取数据，id存在
+                            //新增，没有从服务器获取数据,id不存在
+                            if(this.formData.id)
+                            {
+                                //编辑部门场景下
+                                result=result.filter(item=>item.id!==this.formData.id);
+                            }
                             if (result.some(item => item.code === value)) {
                                 callback(new Error('部门中已经有该编码了'))
                             } else {
@@ -136,7 +153,11 @@ export default {
                         trigger:"blur",
                         validator:async(rule,value,callback)=>{
                             let result = await getDepartment()
-                            // result数组中是否存在 value值
+                            if(this.formData.id)
+                            {
+                                //编辑部门场景下
+                                result=result.filter(item=>item.id!==this.formData.id);
+                            }
                             if (result.some(item => item.name === value)) {
                                 callback(new Error('部门中已经有该名称了'))
                             } else {

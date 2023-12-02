@@ -33,3 +33,14 @@ export function AddDepartment(data)
         data:data
     })
 }
+
+/**
+ * 获取当前部门的数据
+ */
+export function getDepartmentDetail(id)
+{
+    return request({
+        url:`/company/department/${id}`,
+        method:"get"
+    })
+}
