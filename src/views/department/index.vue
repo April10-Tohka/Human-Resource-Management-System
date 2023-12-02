@@ -13,7 +13,8 @@
                         <el-col :span="16">{{ data.name }}</el-col>
                         <el-col :span="8">
                             <span class="tree-manager">{{ data.managerName }}</span>
-                                <el-dropdown  @command="operateDept">
+                                <!-- TRACK 可能需要了解一下事件处理的回调函数，我记得默认会给回调函数传event事件 -->
+                                <el-dropdown  @command="operateDept($event,data.id)">
                                     <span class="el-dropdown-link">
                                         操作<i class="el-icon-arrow-down el-icon--right"></i>
                                     </span>
@@ -38,7 +39,7 @@
             然后子组件$emit('update:showDialog', false),触发update:showDialog，并传了false过去,使得showDialog=false
             参考文档：https://www.jb51.net/javascript/299819zbb.htm
         -->
-        <add-dept :showDialog.sync="showDialog"></add-dept>
+        <add-dept :showDialog.sync="showDialog" :currentNodeId="currentNodeId" @updateDepartment="getDepartment"></add-dept>
     </div>
 </template>
 
@@ -54,6 +55,7 @@ export default {
     data()
     {
         return{
+            currentNodeId:undefined,//当前树形节点的id
             depts:[],
             defaultProps:
             {
@@ -78,8 +80,9 @@ export default {
             
         },
         //部门操作
-        operateDept(type)
+        operateDept(type,id)
         {
+            this.currentNodeId=id;
             // 点击了添加
             if(type==="add")
             {

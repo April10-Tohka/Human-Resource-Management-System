@@ -21,3 +21,15 @@ export function getManagerList()
         method:"get"
     })
 }
+
+/**
+ * 新增部门
+ */
+export function AddDepartment(data)
+{
+    return request({
+        url:"/company/department",
+        method:"post",
+        data:data
+    })
+}

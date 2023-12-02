@@ -20,8 +20,8 @@
                 </el-form-item>
                 <el-row type="flex" justify="center">
                     <el-col :span="12" :offset="6">
-                        <el-button type="primary" size="mini">确定</el-button>
-                        <el-button size="mini">取消</el-button>
+                        <el-button type="primary" size="mini" @click="btnOK">确定</el-button>
+                        <el-button size="mini" @click="closeDialog">取消</el-button>
                     </el-col>
                 </el-row>
             </el-form>
@@ -30,13 +30,17 @@
 </template>
 
 <script>
-import {getDepartment,getManagerList} from "@/api/department"
+import {getDepartment,getManagerList,AddDepartment} from "@/api/department"
 export default {
     name:"AddDept",
     props:{
         showDialog:{
             type:Boolean,
             default:false
+        },
+        currentNodeId:{
+            type:Number,
+            default:undefined
         }
     },
     created()
@@ -47,6 +51,9 @@ export default {
         //关闭表单对话框
         closeDialog()
         {
+            //重置表单
+            this.$refs.addDept.resetFields();
+            //关闭对话框
             this.$emit('update:showDialog', false)
         },
         //获取负责人列表
@@ -56,11 +63,41 @@ export default {
                 console.log(`获取了负责人列表`,data);
                 this.managerList=data;
             })
+        },
+        //AddDept组件的确定按钮
+        btnOK()
+        {
+            console.log("点击了AddDept组件的确定按钮");
+            //判断表单校验是否通过
+            this.$refs.addDept.validate(isOK=>{
+                if(isOK)//校验通过
+                {
+                    //调用新增部门接口
+                    //TRACK 这里用...拓展运算符，我还不会，等会来看看
+                    AddDepartment({...this.formData,pid:this.currentNodeId}).then(()=>{
+                        //新增部门完成之后通知父组件重新获取部门列表数据，并更新
+                        //触发自定义事件
+                        this.$emit("updateDepartment");
+                    }).then(()=>{
+                        //提示新增部门成功
+                        this.$message({
+                            type:"success",
+                            message:"新增部门成功"
+                        })
+                        //重置表单,关闭表单对话框
+                        this.closeDialog();
+                        
+                    
+                    })
+                }
+            })
+            
         }
     },
     data()
     {
         return {
+            //表单数据
             formData:{
                 code:"",//部门编码
                 introduce:"",//部门介绍
@@ -68,6 +105,7 @@ export default {
                 name:"",//部门名称
                 pid:""//部门父级部门id
             },
+            //表单校验规则
             rules:{
                 code:[
                     {required:true,trigger:"blur",message:"部门编码不能为空"},
@@ -109,7 +147,7 @@ export default {
                 ]
                 
             },
-            managerList:[]
+            managerList:[]//部门负责人列表
         }
     }
 }
