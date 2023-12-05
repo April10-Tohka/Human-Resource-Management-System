@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-dialog title="添加部门" :visible="showDialog" @close="closeDialog">
+        <el-dialog :title="DialogTitle" :visible="showDialog" @close="closeDialog">
             <!-- 添加部门的表单内容 -->
             <el-form label-width="120px"  ref="addDept" :model="formData" :rules="rules">
                 <el-form-item label="部门名称" prop="name">
@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import {getDepartment,getManagerList,AddDepartment,getDepartmentDetail} from "@/api/department"
+import {getDepartment,getManagerList,AddDepartment,getDepartmentDetail,modifyDepartment} from "@/api/department"
 export default {
     name:"AddDept",
     props:{
@@ -51,6 +51,15 @@ export default {
         //关闭表单对话框
         closeDialog()
         {
+            //BUG 如果先点击了编辑，再点击添加，会因为获取了数据有了id，导致添加操作判定为编辑场景,只好每次关闭表单，手动重置formData
+            this.formData={
+                code:"",//部门编码
+                introduce:"",//部门介绍
+                managerId:"",//部门负责人名字
+                name:"",//部门名称
+                pid:"",//部门父级部门id
+                id:""
+            }
             //重置表单
             this.$refs.addDept.resetFields();
             //关闭对话框
@@ -72,17 +81,38 @@ export default {
             this.$refs.addDept.validate(isOK=>{
                 if(isOK)//校验通过
                 {
-                    //调用新增部门接口
-                    //TRACK 这里用...拓展运算符，我还不会，等会来看看
-                    AddDepartment({...this.formData,pid:this.currentNodeId}).then(()=>{
-                        //新增部门完成之后通知父组件重新获取部门列表数据，并更新
+                    /**
+                     * 区分场景
+                     * 编辑场景，点击了编辑，网络请求，获取了数据，有id
+                     * 添加场景，点击了添加，只是显示填写表单的对话框，无其他网络请求获取数据操作，没有id
+                     */
+                    let promise;
+                    let title="新增";
+                    if(this.formData.id)
+                    {
+                        //id存在，为编辑场景，调用修改部门数据接口
+                        //修改好部门数据后通知父组件重新获取数据，并更新
+                        title="修改";
+                        promise=modifyDepartment(this.formData)
+                    }
+                    else
+                    {
+                        //id不存在，为添加场景，调用新增部门接口
+                         //调用新增部门接口
+                        //TRACK 这里用...拓展运算符，我还不会，等会来看看
+                        promise=AddDepartment({...this.formData,pid:this.currentNodeId})
+                    }
+
+                    promise.then(()=>{
+                        console.log("title:",title);
+                        //新增部门/修改部门 完成之后通知父组件重新获取部门列表数据，并更新
                         //触发自定义事件
                         this.$emit("updateDepartment");
                     }).then(()=>{
-                        //提示新增部门成功
+                        //提示成功
                         this.$message({
                             type:"success",
-                            message:"新增部门成功"
+                            message:`${title}部门成功`
                         })
                         //重置表单,关闭表单对话框
                         this.closeDialog();                        
@@ -169,6 +199,12 @@ export default {
                 
             },
             managerList:[]//部门负责人列表
+        }
+    },
+    computed:{
+        DialogTitle()
+        {
+            return this.formData.id?"编辑部门":"新增部门";
         }
     }
 }
