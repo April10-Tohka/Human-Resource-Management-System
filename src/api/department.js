@@ -56,3 +56,15 @@ export function modifyDepartment(data)
         data:data
     })
 }
+
+
+/**
+ * 删除部门
+ */
+export function delDepartment(id)
+{
+    return request({
+        url:`/company/department/${id}`,
+        method:"delete"
+    })
+}

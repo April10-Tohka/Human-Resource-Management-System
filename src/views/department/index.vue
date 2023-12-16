@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import {getDepartment} from "@/api/department"
+import {getDepartment,delDepartment} from "@/api/department"
 import {transListToTreeData} from "@/utils/index"
 import AddDept from './components/AddDept.vue'
 export default {
@@ -95,6 +95,32 @@ export default {
                 this.showDialog=true;
                 //调用AddDept组件的getDepartmentDetail方法，获取部门数据
                 this.$refs.AddDept.getDepartmentDetail(id);
+            }
+            //点击了删除
+            else
+            {
+                // 提示确认是否删除
+                this.$confirm("此操作将永久删除该部门, 是否继续?","提示",{
+                    cancelButtonText:"取消",
+                    confirmButtonText:"确认删除",
+                    type:"warning"
+                }).then(()=>{
+                    return delDepartment(id);
+                }).then(()=>{
+                    console.log("delDepartment操作结束后才会输出该句")
+                    //提示删除成功
+                    this.$message({
+                        type:"success",
+                        message:"删除部门成功"
+                    })
+                    //重新获取部门信息
+                    this.getDepartment()
+                }).catch(()=>{
+                    this.$message({
+                        type:"info",
+                        message:`已取消删除操作`
+                    })
+                })
             }
         }
     }
