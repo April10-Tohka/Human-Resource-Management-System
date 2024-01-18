@@ -34,10 +34,24 @@
                 </el-pagination>
             </el-row>
             <el-dialog :visible.sync="showDialog" title="新增角色" width="500">
-                <el-form>
-                    <el-form-item label="角色名称"></el-form-item>
-                    <el-form-item label="启用"></el-form-item>
-                    <el-form-item label="角色描述"></el-form-item>
+                <el-form label-width="120px">
+                    <el-form-item label="角色名称" >
+                        <el-input style="width: 300px;" size="mini"></el-input>
+                    </el-form-item>
+                    <el-form-item label="启用">
+                        <el-switch></el-switch>
+                    </el-form-item>
+                    <el-form-item label="角色描述">
+                        <el-input style="width: 300px;" size="mini" type="textarea" rows="3"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-row type="flex" justify="center">
+                            <el-col span="20">
+                                <el-button type="primary" size="mini">确定</el-button>
+                                <el-button size="mini">取消</el-button>
+                            </el-col>
+                        </el-row>
+                    </el-form-item>
                 </el-form>
             </el-dialog>
         </div>
