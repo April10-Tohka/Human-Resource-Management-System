@@ -33,22 +33,26 @@
 
                 </el-pagination>
             </el-row>
-            <el-dialog :visible.sync="showDialog" title="新增角色" width="500">
-                <el-form label-width="120px">
-                    <el-form-item label="角色名称" >
-                        <el-input style="width: 300px;" size="mini"></el-input>
+
+
+            <!-- 新增角色对话框 -->
+            <el-dialog :visible.sync="showDialog" title="新增角色" width="500" @close="btnCancel">
+                <el-form label-width="120px" :rules="rules" :model="roleForm" ref="roleForm">
+                    <el-form-item label="角色名称" prop="name" >
+                        <el-input style="width: 300px;" size="mini" v-model="roleForm.name"></el-input>
                     </el-form-item>
-                    <el-form-item label="启用">
-                        <el-switch></el-switch>
+                    <el-form-item label="启用" prop="state">
+                        <!-- NOTE 调用el-form的resetFields重置表单数据的时候，需要prop -->
+                        <el-switch v-model="roleForm.state" active-value="1" inactive-value="0"></el-switch>
                     </el-form-item>
-                    <el-form-item label="角色描述">
-                        <el-input style="width: 300px;" size="mini" type="textarea" rows="3"></el-input>
+                    <el-form-item label="角色描述" prop="description">
+                        <el-input style="width: 300px;" size="mini" type="textarea" rows="3" v-model="roleForm.description"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-row type="flex" justify="center">
-                            <el-col span="20">
-                                <el-button type="primary" size="mini">确定</el-button>
-                                <el-button size="mini">取消</el-button>
+                            <el-col :span="20">
+                                <el-button type="primary" size="mini" @click="btnOK">确定</el-button>
+                                <el-button size="mini" @click="btnCancel">取消</el-button>
                             </el-col>
                         </el-row>
                     </el-form-item>
@@ -59,7 +63,7 @@
 </template>
 
 <script>
-import {getRoleList} from "@/api/role"
+import {getRoleList,addRole} from "@/api/role"
 export default {
     name:"Role",
     data(){
@@ -70,7 +74,18 @@ export default {
                 pagesize:5,//每页显示条目个数
                 total:0//总页面数
             },
-            showDialog:false//是否显示弹窗
+            showDialog:false,//是否显示弹窗
+            //表单数据
+            roleForm:{
+                name:"",//角色名称
+                description:"",//角色描述
+                state:0 //  0为未启用 1为启用
+            },
+            //表单校验规则
+            rules:{
+                name:[{required:true,message:"角色名称不能为空",trigger:"blur"}],
+                description:[{required:true,message:"角色描述不能为空",trigger:"blur"}]
+            }
         }
     },
     methods:{
@@ -91,6 +106,37 @@ export default {
             this.pageParams.page=newPage;
             //切换页面后获取当前页的数据
             this.getRoleList();
+        },
+        //表单确定按钮
+        btnOK()
+        {
+            //校验表单数据
+            this.$refs.roleForm.validate((isOK)=>{
+                if(isOK)
+                {
+                    //表单检验成功后，调用接口
+                    addRole(this.roleForm).then(()=>{
+                        //提示新增角色成功
+                        this.$message({
+                            message:"新增角色成功",
+                            type:"success"
+                        })
+                        // 重新加载表格数据
+                        this.getRoleList();
+                        //重置表单关闭对话框
+                        this.btnCancel();
+                    })
+                }
+            })
+
+        },
+        //表单取消按钮
+        btnCancel()
+        {
+            //重置表单
+            this.$refs.roleForm.resetFields();
+            //关闭对话框
+            this.showDialog=false;
         }
     },
     created()
