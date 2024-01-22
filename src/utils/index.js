@@ -133,3 +133,22 @@ export function transListToTreeData(list,rootValue)
   })
   return arr
 }
+
+/**
+ * 防抖函数
+ * @param {*} func 需要防抖处理的函数
+ * @param {*} time 时间
+ * @returns 返回经过防抖处理过的函数
+ */
+export function debounce(func,time=1000)
+{
+    let timer;
+    return function(...params){
+        let context=this;
+        let args=params;
+        clearTimeout(timer);
+        timer=setTimeout(()=>{
+            func.apply(context,args);
+        },time);
+    }
+}
