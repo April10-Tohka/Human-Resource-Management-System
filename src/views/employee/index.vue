@@ -11,7 +11,7 @@
             <el-row class="opeate-tools" type="flex" justify="end">
             <el-button size="mini" type="primary">添加员工</el-button>
             <el-button size="mini">excel导入</el-button>
-            <el-button size="mini">excel导出</el-button>
+            <el-button size="mini" @click="exportEmployee">excel导出</el-button>
             </el-row>
             <!-- 表格组件 -->
             <el-table :data="employeeList">
@@ -54,7 +54,8 @@
 <script>
 import {getDepartment} from "@/api/department"
 import {transListToTreeData,debounce} from "@/utils"
-import {getEmployeeList} from "@/api/employee"
+import {getEmployeeList,exportEmployee} from "@/api/employee"
+import { saveAs } from 'file-saver';//从file-saver包导入保存文件方法
 export default {
     name: 'Employee',
     data() {
@@ -132,6 +133,14 @@ export default {
             //设置查询当前页为第一页
             this.queryParams.page=1;
             this.getEmployeeList();
+        },
+        //导出员工execl
+        exportEmployee()
+        {
+            exportEmployee().then((data)=>{
+                console.log("查看exportEmployee返回的数据",data);
+                saveAs(data,"员工信息表.xlsx");
+            })
         }
     }
 }

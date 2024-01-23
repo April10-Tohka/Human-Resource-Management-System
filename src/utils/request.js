@@ -33,12 +33,17 @@ service.interceptors.request.use((config)=>{
 //添加响应拦截器
 service.interceptors.response.use((res)=>{
   console.log("响应成功！");
+  //如果响应数据形式为blob二进制流,直接返回blob二进制流文件
+  if(res.data instanceof Blob)
+  {
+    return res.data;
+  }
   //响应成功后，获取响应数据
   const {data,message,success}=res.data;
   if(success)
   {
     //成功就返回数据
-    return data;//TRACK 我想知道axios返回的数据是Promise形式还是data本身的形式,这让我只能跟着视频使用async
+    return data;
   }
   else
   {
