@@ -26,3 +26,31 @@ export function exportEmployee()
         timeout:20000
     })
 }
+
+/**
+ * 获取导入Excel模板
+ * @returns 
+ */
+export function getExcelTemplate()
+{
+    return request({
+        url:"/sys/user/import/template",
+        method:"get",
+        timeout:20000,
+        responseType:"blob"
+    })
+}
+
+/**
+ * 上传Excel
+ * @param {*} fileData Form-data类型
+ * @returns 
+ */
+export function uploadExcel(fileData)
+{
+    return request({
+        url:"/sys/user/import",
+        method:"post",
+        data:fileData
+    })
+}

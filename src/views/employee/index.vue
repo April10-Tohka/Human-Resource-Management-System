@@ -1,53 +1,55 @@
 <template>
     <div class="container">
         <div class="app-container">
-        <div class="left">
-            <el-input style="margin-bottom:10px" type="text" prefix-icon="el-icon-search" size="small" placeholder="输入员工姓名全员搜索" v-model="queryParams.keyword" @input="debounceSearchEmployee" />
-            <!-- 树形组件 -->
-            <el-tree :data="depts" :props="defaultProps" :default-expand-all="true" :highlight-current="true"
-            node-key="id" ref="deptsTree" @current-change="selectNode"></el-tree>
+            <div class="left">
+                <el-input style="margin-bottom:10px" type="text" prefix-icon="el-icon-search" size="small" placeholder="输入员工姓名全员搜索" v-model="queryParams.keyword" @input="debounceSearchEmployee" />
+                <!-- 树形组件 -->
+                <el-tree :data="depts" :props="defaultProps" :default-expand-all="true" :highlight-current="true"
+                node-key="id" ref="deptsTree" @current-change="selectNode"></el-tree>
+            </div>
+            <div class="right">
+                <el-row class="opeate-tools" type="flex" justify="end">
+                <el-button size="mini" type="primary">添加员工</el-button>
+                <el-button size="mini" @click="showExcelDialog=true">excel导入</el-button>
+                <el-button size="mini" @click="exportEmployee">excel导出</el-button>
+                </el-row>
+                <!-- 表格组件 -->
+                <el-table :data="employeeList">
+                    <el-table-column label="头像" align="center" prop="staffPhoto1">
+                        <template v-slot="{row}">
+                            <el-avatar v-if="row.staffPhoto" :size="30" :src="row.staffPhoto" ></el-avatar>
+                            <span v-else class="username">{{ row.username.charAt(0)}}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="姓名" prop="username"></el-table-column>
+                    <el-table-column label="手机号" :sortable="true" prop="mobile"></el-table-column>
+                    <el-table-column label="工号" :sortable="true" prop="workNumber"></el-table-column>
+                    <el-table-column label="聘用形式" prop="formOfEmployment" align="center">
+                        <template v-slot="{row}">
+                            <span>{{ row.formOfEmployment===1?"正式":row.formOfEmployment===2?"非正式":"无"}}</span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="部门" prop="departmentName"></el-table-column>
+                    <el-table-column label="入职时间" :sortable="true" prop="timeOfEntry"></el-table-column>
+                    <el-table-column label="操作" width="280px">
+                        <template>
+                            <el-row>
+                                <el-button size="mini" type="text">查看</el-button>
+                                <el-button size="mini" type="text">角色</el-button>
+                                <el-button size="mini" type="text">删除</el-button>
+                            </el-row>
+                        </template>
+                    
+                    </el-table-column>
+                </el-table>
+                <!-- 分页 -->
+                <el-row type="flex" justify="end" style="height: 60px;" align="middle">
+                    <el-pagination layout="total,prev,pager,next" :total="total" @current-change="changePage" :current-page="queryParams.page" :page-sizes="[queryParams.pagesize]"></el-pagination>
+                </el-row>
+            </div>
         </div>
-        <div class="right">
-            <el-row class="opeate-tools" type="flex" justify="end">
-            <el-button size="mini" type="primary">添加员工</el-button>
-            <el-button size="mini">excel导入</el-button>
-            <el-button size="mini" @click="exportEmployee">excel导出</el-button>
-            </el-row>
-            <!-- 表格组件 -->
-            <el-table :data="employeeList">
-                <el-table-column label="头像" align="center" prop="staffPhoto1">
-                    <template v-slot="{row}">
-                        <el-avatar v-if="row.staffPhoto" :size="30" :src="row.staffPhoto" ></el-avatar>
-                        <span v-else class="username">{{ row.username.charAt(0)}}</span>
-                    </template>
-                </el-table-column>
-                <el-table-column label="姓名" prop="username"></el-table-column>
-                <el-table-column label="手机号" :sortable="true" prop="mobile"></el-table-column>
-                <el-table-column label="工号" :sortable="true" prop="workNumber"></el-table-column>
-                <el-table-column label="聘用形式" prop="formOfEmployment" align="center">
-                    <template v-slot="{row}">
-                        <span>{{ row.formOfEmployment===1?"正式":row.formOfEmployment===0?"非正式":"无"}}</span>
-                    </template>
-                </el-table-column>
-                <el-table-column label="部门" prop="departmentName"></el-table-column>
-                <el-table-column label="入职时间" :sortable="true" prop="timeOfEntry"></el-table-column>
-                <el-table-column label="操作" width="280px">
-                    <template>
-                         <el-row>
-                            <el-button size="mini" type="text">查看</el-button>
-                            <el-button size="mini" type="text">角色</el-button>
-                            <el-button size="mini" type="text">删除</el-button>
-                        </el-row>
-                    </template>
-                   
-                </el-table-column>
-            </el-table>
-            <!-- 分页 -->
-            <el-row type="flex" justify="end" style="height: 60px;" align="middle">
-                <el-pagination layout="total,prev,pager,next" :total="total" @current-change="changePage" :current-page="queryParams.page" :page-sizes="[queryParams.pagesize]"></el-pagination>
-            </el-row>
-        </div>
-        </div>
+        <!-- 放置导入Excel组件 -->
+        <importExcel :showExcelDialog.sync="showExcelDialog" @uploadExcelSuccess="getEmployeeList"></importExcel>
     </div>
 </template>
 
@@ -56,8 +58,12 @@ import {getDepartment} from "@/api/department"
 import {transListToTreeData,debounce} from "@/utils"
 import {getEmployeeList,exportEmployee} from "@/api/employee"
 import { saveAs } from 'file-saver';//从file-saver包导入保存文件方法
+import importExcel from './component/importExcel.vue';
 export default {
     name: 'Employee',
+    components:{
+        importExcel
+    },
     data() {
         return {
             depts: [], //部门列表数据
@@ -75,7 +81,9 @@ export default {
             //员工列表数据
             employeeList: [],
             //员工列表数据的总数
-            total:null
+            total:null,
+            //是否显示导入Excel页面
+            showExcelDialog:false
         };
     },
     created() {
