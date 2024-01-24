@@ -32,11 +32,13 @@
                     <el-table-column label="部门" prop="departmentName"></el-table-column>
                     <el-table-column label="入职时间" :sortable="true" prop="timeOfEntry"></el-table-column>
                     <el-table-column label="操作" width="280px">
-                        <template>
+                        <template v-slot="{row}">
                             <el-row>
                                 <el-button size="mini" type="text">查看</el-button>
                                 <el-button size="mini" type="text">角色</el-button>
-                                <el-button size="mini" type="text">删除</el-button>
+                                <el-popconfirm title="这是一段内容确定删除吗？" @onConfirm="btnDel(row.id)">
+                                    <el-button type="text" size="mini" slot="reference" style="margin-left: 10px;" >删除</el-button>
+                                </el-popconfirm>
                             </el-row>
                         </template>
                     
@@ -56,7 +58,7 @@
 <script>
 import {getDepartment} from "@/api/department"
 import {transListToTreeData,debounce} from "@/utils"
-import {getEmployeeList,exportEmployee} from "@/api/employee"
+import {getEmployeeList,exportEmployee,DelEmployee} from "@/api/employee"
 import { saveAs } from 'file-saver';//从file-saver包导入保存文件方法
 import importExcel from './component/importExcel.vue';
 export default {
@@ -148,6 +150,20 @@ export default {
             exportEmployee().then((data)=>{
                 console.log("查看exportEmployee返回的数据",data);
                 saveAs(data,"员工信息表.xlsx");
+            })
+        },
+        //删除员工
+        btnDel(id)
+        {
+            console.log("传来的id为",id);
+            //调用删除接口，删除后端数据
+            DelEmployee(id).then(()=>{
+                //提示删除操作成功
+                this.$message({message:"删除成功",type:"success"});
+                //判断该行是否为该页的最后一行,同时该页不为第一页
+                if(this.employeeList.length===1&& this.queryParams.page>1){this.queryParams.page--};
+                //重新加载数据
+                this.getEmployeeList();
             })
         }
     }

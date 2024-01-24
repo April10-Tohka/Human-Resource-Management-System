@@ -54,3 +54,16 @@ export function uploadExcel(fileData)
         data:fileData
     })
 }
+
+/**
+ * 删除员工
+ * @param {*} id 要删除的员工id
+ * @returns 
+ */
+export function DelEmployee(id)
+{
+    return request({
+        url:`/sys/user/${id}`,
+        method:"delete"
+    })
+}
