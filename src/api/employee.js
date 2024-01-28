@@ -67,3 +67,17 @@ export function DelEmployee(id)
         method:"delete"
     })
 }
+
+/**
+ * 添加员工
+ * @param {*} data 员工详情表单
+ * @returns 
+ */
+export function AddEmployee(data)
+{
+    return request({
+        url:"/sys/user",
+        method:"post",
+        data:data
+    })
+}
