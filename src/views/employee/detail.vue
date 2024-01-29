@@ -29,7 +29,9 @@
                     size="mini"
                     class="inputW"
                     v-model="userInfo.mobile"
+                    :disabled="$route.query.id?true:false" 
                   />
+                  <!-- NOTE 字符串转bool $route.query.id为字符串, !!$route.query.id可以转为bool -->
                 </el-form-item>
               </el-col>
             </el-row>
@@ -45,6 +47,7 @@
                    -->
                    <!-- 一个组件上的 v-model 默认会利用名为 value 的 prop 和名为 input 的事件 -->
                   <selectTree class="inputW" v-model="userInfo.departmentId" ></selectTree>
+                  <!-- BUG 编辑状态下，部门没有显示所处的部门 -->
                 </el-form-item>
               </el-col>
             </el-row>
@@ -106,7 +109,7 @@
   
 <script>
 import selectTree from './component/selectTree.vue';
-import {AddEmployee} from "@/api/employee"
+import {AddEmployee,getEmployeeDetail,updateEmployeeDetail} from "@/api/employee"
 export default {
   name:"detail",
   components:{
@@ -120,7 +123,7 @@ export default {
               mobile:"",//手机号
               workNumber:"",//工号
               formOfEmployment:null,//聘用形式
-              departmentId:1,//部门id
+              departmentId:null,//部门id
               timeOfEntry:"",//入职时间
               correctionTime:""//转正时间
           },
@@ -128,7 +131,7 @@ export default {
           rules:{
               username:[
                   {required:true,message:"请输入名字",trigger:"blur"},
-                  {min:1,max:4,message:"姓名为1-4位"}
+                  {min:1,max:6,message:"姓名为1-6位"}
               ],
               mobile:[
                   {required:true,message:"请输入手机号",trigger:"blur"},
@@ -160,24 +163,55 @@ export default {
       }
   },
   methods:{
+    //保存更新按钮
     saveData()
     {
+      //校验表单是否通过
       this.$refs.userForm.validate((isOK)=>{
         if(isOK)
         {
-          //调用接口
-          AddEmployee().then(()=>{
-            //提示添加员工成功
-            this.$message({
-              type:"success",
-              message:"添加员工成功"
-            });
-            //跳回员工列表页
-            this.$router.push("/employee");
-          })
+          //编辑状态下($route.query.id有值)
+          if(this.$route.query.id)
+          {
+            updateEmployeeDetail(this.userInfo).then(()=>{
+              //提示更新员工信息成功
+              this.$message({
+                type:"success",
+                message:"更新员工信息成功"
+              })
+            })
+          }
+          else
+          {
+            // 新增状态下
+            //调用接口
+            AddEmployee().then(()=>{
+              //提示添加员工成功
+              this.$message({
+                type:"success",
+                message:"添加员工成功"
+              });
+            })
+          }
+          //跳回员工列表页
+          this.$router.push("/employee");
         }
       });
+    },
+    //获取员工详情信息
+    getEmployeeDetail()
+    {
+      getEmployeeDetail(this.$route.query.id).then((data)=>{
+        console.log("获取员工详情信息返回的数据",data);
+        this.userInfo=data;
+      })
     }
+  },
+  created()
+  {
+    console.log("查看路由传来的参数",this.$route.query.id);
+    //如果点击查看员工(有路由传递的参数)，根据路由传来的参数来查询员工详情
+    this.$route.query.id && this.getEmployeeDetail();//NOTE 等同于if(){}
   }
 }
 </script>

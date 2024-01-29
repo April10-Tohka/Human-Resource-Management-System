@@ -34,7 +34,7 @@
                     <el-table-column label="操作" width="280px">
                         <template v-slot="{row}">
                             <el-row>
-                                <el-button size="mini" type="text">查看</el-button>
+                                <el-button size="mini" type="text" @click="$router.push({path:'/employee/detail',query:{id:row.id}})">查看</el-button>
                                 <el-button size="mini" type="text">角色</el-button>
                                 <el-popconfirm title="这是一段内容确定删除吗？" @onConfirm="btnDel(row.id)">
                                     <el-button type="text" size="mini" slot="reference" style="margin-left: 10px;" >删除</el-button>

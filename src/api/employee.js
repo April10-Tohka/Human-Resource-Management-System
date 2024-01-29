@@ -81,3 +81,29 @@ export function AddEmployee(data)
         data:data
     })
 }
+
+/**
+ * 获取员工详情信息
+ * @returns 
+ */
+export function getEmployeeDetail(id)
+{
+    return request({
+        url:`/sys/user/${id}`,
+        method:"get"
+    })
+}
+
+/**
+ * 更新员工详情信息
+ * @param {*} data 修改后的员工详情信息,(需要有员工的id)
+ * @returns 
+ */
+export function updateEmployeeDetail(data)
+{
+    return request({
+        url:`/sys/user/${data.id}`,
+        method:"put",
+        data:data
+    })
+}
