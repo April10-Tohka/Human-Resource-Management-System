@@ -47,7 +47,7 @@
                    -->
                    <!-- 一个组件上的 v-model 默认会利用名为 value 的 prop 和名为 input 的事件 -->
                   <selectTree class="inputW" v-model="userInfo.departmentId" ></selectTree>
-                  <!-- BUG 编辑状态下，部门没有显示所处的部门 -->
+                  <!-- BUG 点击查看后，员工详情页面的部门栏没有显示所处的部门 -->
                 </el-form-item>
               </el-col>
             </el-row>
@@ -91,6 +91,8 @@
               <el-col :span="12">
                 <el-form-item label="员工头像">
                   <!-- 放置上传图片 -->
+                  <!-- 对自定义组件使用v-model来实现父子组件通信,将服务器返回的头像数据传递给子组件-->
+                  <imageUpload v-model="userInfo.staffPhoto"></imageUpload>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -109,11 +111,13 @@
   
 <script>
 import selectTree from './component/selectTree.vue';
+import imageUpload from './component/imageUpload.vue';
 import {AddEmployee,getEmployeeDetail,updateEmployeeDetail} from "@/api/employee"
 export default {
   name:"detail",
   components:{
-    selectTree
+    selectTree,
+    imageUpload
   },
   data(){
       return{
@@ -125,7 +129,8 @@ export default {
               formOfEmployment:null,//聘用形式
               departmentId:null,//部门id
               timeOfEntry:"",//入职时间
-              correctionTime:""//转正时间
+              correctionTime:"",//转正时间
+              staffPhoto:""//头像
           },
           //表单校验规则
           rules:{
