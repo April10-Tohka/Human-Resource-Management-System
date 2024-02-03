@@ -107,3 +107,29 @@ export function updateEmployeeDetail(data)
         data:data
     })
 }
+
+/**
+ * 获取已启用的角色列表
+ * @returns 
+ */
+export function getRoleList()
+{
+    return request({
+        url:"/sys/role/list/enabled",
+        method:"get"
+    })
+}
+
+/**
+ * 给员工分配角色
+ * @param {*} data {id，roleIds}
+ * @returns 
+ */
+export function assignRoles(data)
+{
+    return request({
+        url:"/sys/user/assignRoles",
+        method:"put",
+        data:data
+    })
+}
