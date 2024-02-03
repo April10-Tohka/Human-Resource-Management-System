@@ -55,7 +55,7 @@
                         </template>
                         <!-- 非编辑状态下 -->
                         <template v-else>
-                            <el-button type="text" size="mini">分配权限</el-button>
+                            <el-button type="text" size="mini" @click="btnPermission(row)">分配权限</el-button>
                             <el-button type="text" size="mini" @click="btnEdit(row)">编辑</el-button>
                             <!-- 点击编辑，需要将该行的数据传递给函数，因为使用了el-table-column的插槽来自定义内容，v-slot可以获取到该行数据,解构插槽对象里的row并传递给函数 -->
                             <el-popconfirm title="这是一段内容确定删除吗？" @onConfirm="btnDel(row.id)">
@@ -98,12 +98,27 @@
                     </el-form-item>
                 </el-form>
             </el-dialog>
+
+            <!-- 分配权限对话框 -->
+            <el-dialog title="分配权限" :visible.sync="showPermissionDialog">
+                <el-tree ref="permissionTree" :data="permissionData" :props="{label:'name'}" default-expand-all show-checkbox node-key="id" :default-checked-keys="permIds"></el-tree>
+                <template #footer>
+                    <el-row type="flex" justify="center">
+                        <el-col :span="6">
+                            <el-button type="primary" @click="confirmAssignPermission">确定</el-button>
+                            <el-button @click="showPermissionDialog=false">取消</el-button>
+                        </el-col>
+                    </el-row>
+                </template>
+            </el-dialog>
         </div>
     </div>
 </template>
 
 <script>
-import {getRoleList,addRole,updateRole,delRole} from "@/api/role"
+import {getRoleList,addRole,updateRole,delRole,getRoleDetail,assignPermission} from "@/api/role"
+import {getPermissionList} from "@/api/permission"
+import { transListToTreeData } from "@/utils"
 export default {
     name:"Role",
     data(){
@@ -125,7 +140,11 @@ export default {
             rules:{
                 name:[{required:true,message:"角色名称不能为空",trigger:"blur"}],
                 description:[{required:true,message:"角色描述不能为空",trigger:"blur"}]
-            }
+            },
+            showPermissionDialog:false,//是否显示分配权限对话框
+            permissionData:[],//权限数据
+            currentRoleId:null,//选中角色的id
+            permIds:[],//角色关联的权限集合，来实现默认选中效果
         }
     },
     methods:{
@@ -245,6 +264,30 @@ export default {
                 if(this.list.length===1){this.pageParams.page--};//是的话，当前页码-1
                 // 重新获取角色列表
                 this.getRoleList();
+            })
+        },
+        //分配权限按钮
+        btnPermission(row)
+        {
+            // 记录选中角色的id
+            this.currentRoleId=row.id;
+            //获取角色详情和权限列表
+            Promise.all([getPermissionList(),getRoleDetail(this.currentRoleId)]).then((data)=>{
+                console.log("查看promise.all返回的data,",data);
+                this.permissionData=transListToTreeData(data[0],0);
+                this.permIds=data[1].permIds;
+                this.showPermissionDialog=true;
+            })
+        },
+        //分配权限对话框的确定按钮
+        confirmAssignPermission()
+        {
+            //获取选中节点的数组
+            let permIds=this.$refs.permissionTree.getCheckedKeys();
+            //调用接口
+            assignPermission({id:this.currentRoleId,permIds:permIds}).then(()=>{
+                this.$message.success("分配权限成功");
+                this.showPermissionDialog=false;
             })
         }
     },
