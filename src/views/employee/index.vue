@@ -35,7 +35,7 @@
                         <template v-slot="{row}">
                             <el-row>
                                 <el-button size="mini" type="text" @click="$router.push({path:'/employee/detail',query:{id:row.id}})">查看</el-button>
-                                <el-button size="mini" type="text">角色</el-button>
+                                <el-button size="mini" type="text" @click="btnRole(row.id)">角色</el-button>
                                 <el-popconfirm title="这是一段内容确定删除吗？" @onConfirm="btnDel(row.id)">
                                     <el-button type="text" size="mini" slot="reference" style="margin-left: 10px;" >删除</el-button>
                                 </el-popconfirm>
@@ -52,13 +52,27 @@
         </div>
         <!-- 放置导入Excel组件 -->
         <importExcel :showExcelDialog.sync="showExcelDialog" @uploadExcelSuccess="getEmployeeList"></importExcel>
+        <!-- 放置员工分配角色对话框 -->
+        <el-dialog title="分配角色" :visible.sync="showAssignRoleDialog">
+            <el-checkbox-group v-model="roleIds">
+                <el-checkbox v-for="item in roleList" :key="item.id" :label="item.id">{{ item.name }}</el-checkbox>
+            </el-checkbox-group>
+            <template #footer>
+                <el-row type="flex" justify="center" >
+                    <el-col :span="6">
+                        <el-button type="primary" @click="confirmAssignRoles">确定</el-button>
+                        <el-button @click="showAssignRoleDialog=false">取消</el-button>
+                    </el-col>
+                </el-row>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
 <script>
 import {getDepartment} from "@/api/department"
 import {transListToTreeData,debounce} from "@/utils"
-import {getEmployeeList,exportEmployee,DelEmployee} from "@/api/employee"
+import {getEmployeeList,exportEmployee,DelEmployee,getRoleList,getEmployeeDetail,assignRoles} from "@/api/employee"
 import { saveAs } from 'file-saver';//从file-saver包导入保存文件方法
 import importExcel from './component/importExcel.vue';
 export default {
@@ -85,7 +99,15 @@ export default {
             //员工列表数据的总数
             total:null,
             //是否显示导入Excel页面
-            showExcelDialog:false
+            showExcelDialog:false,
+            //是否弹出员工分配角色对话框
+            showAssignRoleDialog:false,
+            //已启用的角色列表
+            roleList:[],
+            //选中的角色列表
+            roleIds:[],
+            //选中某个员工的id
+            currentId:null
         };
     },
     created() {
@@ -164,6 +186,27 @@ export default {
                 if(this.employeeList.length===1&& this.queryParams.page>1){this.queryParams.page--};
                 //重新加载数据
                 this.getEmployeeList();
+            })
+        },
+        //给员工分配角色
+        btnRole(id)
+        {
+            // NOTE promise.all来 获取已启用的角色列表数据和获取员工的基本信息中所拥有的角色
+            Promise.all([getRoleList(),getEmployeeDetail(id)]).then((data)=>{
+                console.log("查看Promise.all返回的结果",data);
+                this.roleList=data[0];
+                this.roleIds=data[1].roleIds;
+                this.currentId=id;//记录选中某个员工的id
+                //弹出分配角色对话框
+                this.showAssignRoleDialog=true;
+            })
+        },
+        //分配角色对话框确定按钮
+        confirmAssignRoles()
+        {
+            assignRoles({id:this.currentId,roleIds:this.roleIds}).then(()=>{
+                this.$message.success("分配角色成功");
+                this.showAssignRoleDialog=false;
             })
         }
     }
