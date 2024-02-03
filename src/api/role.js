@@ -38,3 +38,31 @@ export function delRole(id)
         method:"delete"
     })
 }
+
+/**
+ * 获取角色的详情
+ * @param {*} id 角色的id
+ * @returns 
+ */
+export function getRoleDetail(id)
+{
+    return request({
+        url:`/sys/role/${id}`,
+        method:"get"
+    })
+}
+
+
+/**
+ * 给角色分配权限
+ * @param {*} data {id:角色id,permIds:所选择的权限点数组}
+ * @returns 
+ */
+export function assignPermission(data)
+{
+    return request({
+        url:"/sys/role/assignPrem",
+        method:"put",
+        data:data
+    })
+}
