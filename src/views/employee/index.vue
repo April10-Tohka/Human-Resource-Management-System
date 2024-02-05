@@ -9,7 +9,7 @@
             </div>
             <div class="right">
                 <el-row class="opeate-tools" type="flex" justify="end">
-                <el-button size="mini" type="primary" @click="$router.push('/employee/detail')">添加员工</el-button>
+                <el-button size="mini" type="primary" @click="$router.push('/employee/detail')"  v-permission="'add-employee'">添加员工</el-button>
                 <el-button size="mini" @click="showExcelDialog=true">excel导入</el-button>
                 <el-button size="mini" @click="exportEmployee">excel导出</el-button>
                 </el-row>
@@ -75,6 +75,7 @@ import {transListToTreeData,debounce} from "@/utils"
 import {getEmployeeList,exportEmployee,DelEmployee,getRoleList,getEmployeeDetail,assignRoles} from "@/api/employee"
 import { saveAs } from 'file-saver';//从file-saver包导入保存文件方法
 import importExcel from './component/importExcel.vue';
+import store from "@/store";
 export default {
     name: 'Employee',
     components:{
@@ -208,6 +209,24 @@ export default {
                 this.$message.success("分配角色成功");
                 this.showAssignRoleDialog=false;
             })
+        }
+    },
+    directives:{
+        permission:{
+            //inserted钩子函数，被绑定元素插入父结点时调用
+            inserted(el,binding)
+            {
+                console.log("el:",el);
+                console.log("binding:",binding);
+                console.log("store",store);
+                console.log(store.state.user.UserInfo.roles);
+                // NOTE ?.可选链操作符 见文档https://blog.csdn.net/Ght19970126/article/details/122084892
+                const {points} =store.state.user?.UserInfo?.roles || [];
+                console.log("points:",points);
+                //如果用户信息不包含add-employee权限，就删除指令绑定的元素
+                if(!points.includes(binding.value)) {el.remove()};
+                
+            }
         }
     }
 }

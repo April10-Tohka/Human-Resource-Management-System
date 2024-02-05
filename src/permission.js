@@ -3,7 +3,7 @@ import router from "./router";
 import nprogress from "nprogress"
 import "nprogress/nprogress.css"
 import store from "./store";
-
+import {asyncRoutes} from "@/router" //引入动态路由
 //白名单
 const WhiteList=["/login","/404"];
 
@@ -28,9 +28,25 @@ router.beforeEach(async(to,from,next)=>{
       {
         //不存在用户的id，则获取用户资料,通过调用action里的getUserInfo
         console.log("开始获取用户资料，会调用getUserInfo的action，会请求一次");
-        await store.dispatch("user/getUserInfo");
+        await store.dispatch("user/getUserInfo")
+        const {roles}= store.getters.userInfo;//从vuex获取用户资料
+        //过滤出用户能访问的路由
+        const filterRoutes= asyncRoutes.filter(item=>{
+          return roles.menus.includes(item.name);
+        })
+        //将404放置在所有的路由的最后
+        filterRoutes.push({ path: '*', redirect: '/404', hidden: true });
+        console.log("filterRoutes:",filterRoutes);
+        //添加到用户所能访问的路由
+        store.commit("user/setRoutes",filterRoutes);
+        router.addRoutes(filterRoutes);//添加路由
+        next(to.path);
       }
-      next();
+      else
+      {
+        next();
+      }
+      
     }
   }
   else

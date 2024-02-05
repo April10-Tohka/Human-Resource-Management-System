@@ -132,11 +132,13 @@ export default {
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(()=>{
-                delPermission(id).then(()=>{
-                    //提示删除成功
-                    this.$message({type:"success",message:"删除权限点成功"});
-                })
-            }).then(()=>{
+                // delPermission(id).then(()=>{
+                //     //提示删除成功
+                //     this.$message({type:"success",message:"删除权限点成功"});
+                // })
+                return Promise.all([delPermission(id),this.$message({type:"success",message:"删除权限点成功"})]);
+            }).then((all)=>{
+                console.log("查看使用了promise。all返回的结果",all);
                 //删除后重新获取权限点列表数据
                 this.getPermissionList();
             }).catch(()=>{

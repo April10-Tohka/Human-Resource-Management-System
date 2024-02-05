@@ -1,9 +1,11 @@
 import {getToken,setToken,removeToken} from "../../utils/auth"
 import { login ,getUserInfo} from "@/api/user";
+import { constantRoutes,resetRouter } from "@/router";
 const state={
   //token通过读取缓存来获取
   token:getToken(),
-  UserInfo:{}//用户资料
+  UserInfo:{},//用户资料
+  routes:constantRoutes//用户所能访问的路由
 }
 
 const mutations={
@@ -25,6 +27,11 @@ const mutations={
   setUserInfo(state,UserInfo)
   {
     state.UserInfo=UserInfo;
+  },
+  //设置用户所能访问的路由
+  setRoutes(state,newRoutes)
+  {
+    state.routes=[...state.routes,...newRoutes];
   }
 }
 
@@ -36,22 +43,17 @@ const actions={
     console.log("这里是store里的action，收到的value",value);
     console.log("下面开始调用登录接口!");
     // 调用登录接口
-    const token=await login(value); //TRACK 这里视频用了async ，我不会，尤其是这里,不用await的话返回Promise，我忘了怎么从Promise拿到那个data了
-    // token.then(data=>{console.log("a去输出data ",data)})
+    const token=await login(value); 
     console.log("token:",token);
     //登录接口返回了一个token， 
     context.commit("setToken",token)
-
-    // login(value).then((token)=>{context.commit("setToken",token);return Promise.resolve()});
-      //BUG 这里也能实现设置token，但不知道为什么点了登录就不会有后续跳转的页面以及获取用户资料,要刷新才会跳转
-    
   },
 
   //获取用户资料
   async getUserInfo(context)
   {
     //调用用户资料接口
-     const result= await getUserInfo();
+    const result= await getUserInfo();
     //将返回的结果设置vuex
     context.commit("setUserInfo",result);
   },
@@ -63,6 +65,7 @@ const actions={
     context.commit("removeToken");
     //将用户资料设置为空
     context.commit("setUserInfo",{});
+    resetRouter();//重置路由
   }
 }
 
